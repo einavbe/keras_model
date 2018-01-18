@@ -155,7 +155,7 @@ def train_model(X_train,
                 batch_size=256,
                 class_fact=4.):
 
-
+    #TODO : USE cnn_model class instead singlur values
     model=Sequential()
     model.add(Conv2D(filters=nb_filters, kernel_size=(10, 10),strides=(2,2), kernel_initializer='orthogonal', padding='valid',
                      kernel_regularizer=l2(0.0001), kernel_constraint=maxnorm(2.),

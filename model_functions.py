@@ -97,6 +97,10 @@ class features_setting(object):
         self.appendEnergy = appendEnergy
         self.total_window_length=winlen+length*winstep
 class model_setting(object):
+    '''
+        :keyword
+
+    '''
     __metaclass__ = Singleton
     def __init__(self, load_weights, model_name,weights,nb_filters,nb_classes,nb_hidden,loss,optimizer,nb_epoch,batch_size,class_fact):
                 self.load_weights=load_weights
@@ -200,6 +204,7 @@ class record(object):
         the later, might use to feed cnn for hb classification
 
         '''
+        # TODO :implement features from structure and delete single features
         (rate, sig) = wav.read(filename=self.whole_name)
 
         first_mels = mfcc(signal=sig, samplerate=rate, winlen=0.2, winstep=0.05, numcep=50,

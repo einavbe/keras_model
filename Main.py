@@ -2,7 +2,7 @@ from utils import create_full_csv
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from model_functions import datalist,record,plot_confusion_matrix,features_setting
+from model_functions import datalist,record,plot_confusion_matrix,features_setting,model_setting
 from tempfile import TemporaryFile
 from sklearn.metrics import confusion_matrix,roc_curve,auc
 import matplotlib.pyplot as plt
@@ -13,8 +13,11 @@ from sklearn.utils import shuffle
 from keras_functions import train_model,test_model
 
 
-
 def Main():
+    '''
+
+    :return:
+    '''
 #Main Funcion,
    # phase=input('choose phase train/test')
     phase='train'
@@ -24,8 +27,8 @@ def Main():
     features_module=features_setting(length=50,width=50, samplerate=rate, winlen=0.2, winstep=0.05, numcep=50,
                           nfilt=50, nfft=512, lowfreq=0, highfreq=rate / 4, preemph=0.97, ceplifter=22,
                           appendEnergy=True)
-
-
+    #TODO : Finish the model_setting and implement
+    #keras_model=model_setting(load_weights=True, model_name='default_model',weights,nb_filters,nb_classes,nb_hidden,loss,optimizer,nb_epoch,batch_size,class_fact)
     if (phase=='train'):
         #Load database,usaully saved one,
         #One should modify this function in order to enigineer the features
@@ -51,47 +54,24 @@ def Main():
         print('Y_test shape:', Y_val.shape)
         del X
         del Y
-
-
-        prediction, _ = train_model(X_train, X_val, Y_train, Y_val,model_name='decaymode.json',weights='hb_decay.hdf5')
-        
+        prediction, _ = train_model(X_train,X_val,Y_train,Y_val,model_name='decaymode.json',weights='hb_decay.hdf5')
         visualization(1-prediction,1- Y_val)
-
-    #if (phase== 'test'):
-       # X_test,Y_test=create_test_db()
-       # Y_test,prediction= test_model(X_test,Y_test,model_name=r'C:\Users\Anna-VLS4U\Desktop\PCG RESEARCH\keras_model\\decaymode.json',weights=r'C:\Users\Anna-VLS4U\Desktop\PCG RESEARCH\keras_model\\hb_decay.hdf5')
-        #prediction=1- prediction
-
-
-        #visualization(prediction, Y_test)
-
-#pass
-
-
 def visualization(prediction,Y_test):
-
-
     y_test = np.argmax(Y_test, axis=1)
     y_pred = np.argmax(prediction, axis=1)
-
     #Plot confusion matrix
     cnf_matrix = confusion_matrix(y_test, y_pred)
     np.set_printoptions(precision=2)
-
     # Plot non-normalized confusion matrix
     plt.figure()
     class_names=["Normal","Abnormal"]
     plot_confusion_matrix(cnf_matrix, classes=class_names,
                           title='Confusion matrix, without normalization')
-
     # Plot normalized confusion matrix
     plt.figure()
     plot_confusion_matrix(cnf_matrix, classes=class_names, normalize=True,
                           title='Normalized confusion matrix')
-
     plt.show()
-
-
 # Compute ROC curve and ROC area for each class
     fpr = dict()
     tpr = dict()
@@ -108,38 +88,26 @@ def visualization(prediction,Y_test):
 
     # First aggregate all false positive rates
     all_fpr = np.unique(np.concatenate([fpr[i] for i in range(nb_classes)]))
-
     # Then interpolate all ROC curves at this points
     mean_tpr = np.zeros_like(all_fpr)
     for i in range(nb_classes):
         mean_tpr += interp(all_fpr, fpr[i], tpr[i])
-
     # Finally average it and compute AUC
     mean_tpr /= nb_classes
-
     fpr["macro"] = all_fpr
     tpr["macro"] = mean_tpr
     roc_auc["macro"] = auc(fpr["macro"], tpr["macro"])
-
-
-
-
     plt.figure()
-    lw = 2
+    lw = 2#line width
     plt.plot(fpr[1], tpr[1], color='darkorange',
              lw=lw, label='ROC-1 curve (area = %0.2f)' % roc_auc[1])
-
-
     plt.plot(fpr["micro"], tpr["micro"], color='black',
            lw=lw, label='ROC-MicroAvg curve (area = %0.2f)' % roc_auc["micro"])
-
-
     plt.plot(fpr["macro"], tpr["macro"], color='green',
            lw=lw, label='ROC-MacroAvg curve (area = %0.2f)' % roc_auc["macro"])
 
     plt.plot(fpr[0], tpr[0], color='red',
             lw=lw, label='ROC-0 curve (area = %0.2f)' % roc_auc[0])
-
     plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
@@ -148,16 +116,13 @@ def visualization(prediction,Y_test):
     plt.title('Receiver operating characteristic example')
     plt.legend(loc="lower right")
     plt.show()
-
-
-def load_test_db(file_folder=r'C:\Users\Anna-VLS4U\Desktop\PCG RESEARCH\validation'):
-
-
-    return True
-
-
-
 def load_train_db(filesfolder=r'C:\Users\Anna-VLS4U\Desktop\PCG RESEARCH\keras_model',setting=features_setting):
+    '''
+
+    :param filesfolder:
+    :param setting:
+    :return:
+    '''
     try :
         os.chdir(filesfolder)
         file_number = 0
@@ -195,30 +160,16 @@ def load_train_db(filesfolder=r'C:\Users\Anna-VLS4U\Desktop\PCG RESEARCH\keras_m
 # at this point we have all the training data loaded in the names: norm abnorm, and we also have the
         #amount of signals in tot_norm and tot_abnorm
     return norm,abnorm,tot_norm,tot_abnorm
-
-
-'''
-def create_test_db(db_folder=r'C:\/Users\Anna-VLS4U\Desktop\PCG RESEARCH\validation'):
-    X_test=np.zeros((1000,3,50,50))
-    labels=np.zeros(1000)
-    data_list=datalist(db_folder)
-    for index, row in data_list.iterrows():
-        if row[1]==1:
-            labels[index]= 1
-        else:
-            labels[index] = 0
-        X_test[index]=record(name=row[0],folder_name=db_folder).get_features()
-    Y_test=np_utils.to_categorical(labels[0:index],num_classes=2)
-
-    return X_test[0:index],Y_test
-'''
-
-
-    #Create
-    #create_full_csv(reference_db_path=r'C:\Users\Anna-VLS4U\Desktop\PCG RESEARCH\training\training-a\\')
 def create_train_db(db_name,db_folder=r'C:\Users\Anna-VLS4U\Desktop\PCG RESEARCH\training\training-'
                     ,samp_index=0,setting=features_setting):
+    '''
 
+    :param db_name:
+    :param db_folder:
+    :param samp_index:
+    :param setting:
+    :return:
+    '''
     #specify the folder name
     folders=('a','b','c','d','e','f')
     normal=np.zeros((3000,3,setting.length,setting.width))
@@ -240,7 +191,10 @@ def create_train_db(db_name,db_folder=r'C:\Users\Anna-VLS4U\Desktop\PCG RESEARCH
             label=row[1]
             crecord = record(name=filename,folder_name=datafolder)
 
-            if samp_index<int(crecord.total_length()/setting.total_window_length):
+            #TODO : ADD signal quality check Using all record singular features
+            if samp_index<int(crecord.total_length/setting.total_window_length):
+                #TODO : extract data from samp_index!=0 for other parts of code
+                #TODO: Work with various db files or mrjob
                 features = crecord.get_features(index=samp_index, setting=features_setting)
                 if label==1:
                     normal[tot_norm]=features
@@ -254,7 +208,6 @@ def create_train_db(db_name,db_folder=r'C:\Users\Anna-VLS4U\Desktop\PCG RESEARCH
 
 
     return normal,abnormal,tot_norm,tot_abnorm
-
 if __name__ == "__main__":
     Main()
 
