@@ -133,21 +133,22 @@ def load_train_db(filesfolder=r'C:\Users\Anna-VLS4U\Desktop\PCG RESEARCH\keras_m
 
         if file_number == 1:
             filename = filesfolder + '\\' + file
+            if input('open last db y/n') == 'y':
+                npzfile = np.load(filename)
+                norm = npzfile['arr_0']
+                abnorm = npzfile['arr_1']
+                tot_norm = npzfile['arr_2']
+                tot_abnorm = npzfile['arr_3']
+            else:
+                db_name = input('enter db_name dont forget.npz')
         else:
-            input_file_name = input('more than one dbz has found, please choose the one or leave empty to create new db ')
+            input_file_name = input('no db or more than 1 db, please write  db_name.npz')
             filename = filesfolder + '\\' + input_file_name
-
+            norm, abnorm, tot_norm, tot_abnorm = create_train_db(db_name=filename, setting=setting)
         print('Found db file:' + filename)
-        if input('open last db y/n')=='y':
-            npzfile= np.load(filename)
-            norm=npzfile['arr_0']
-            abnorm= npzfile['arr_1']
-            tot_norm=npzfile['arr_2']
-            tot_abnorm=npzfile['arr_3']
-        else:
-            db_name = input('enter db_name dont forget.npz')
 
-            norm, abnorm, tot_norm, tot_abnorm = create_train_db(db_name=filesfolder + '\\' + db_name, setting=setting)
+
+
 
     except Exception as inst:
         print       ( type(inst))  # the exception instance

@@ -129,7 +129,7 @@ class record(object):
         self.name = name
         self.folder_name = folder_name
         self.whole_name=folder_name+'\\'+name+'.wav'
-        self.total_length=None
+        self.total_length=9
         self.snr=None
         self.sampling_rate=None
         self.normalized_amplitude_envelope_variance=None
@@ -137,7 +137,8 @@ class record(object):
         self.signal_kurtosis = None
         self.max_correlation_peak=None
         self.sample_entropy=None
-        self.initialize_parameters()
+        #self.initialize_parameters()
+        #  self init should be used for signal quality detection but it too slow and should be optimized to only neccesary parameters
 
     def initialize_parameters(self,vis=False):
 

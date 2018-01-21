@@ -25,7 +25,6 @@ import seaborn as sns
 from keras.layers.normalization import BatchNormalization
 from model_functions import Singleton
 
-
 class cnn_parameters(object):
     __metaclass__ = Singleton
     def __init__(self, weightsPath, model_name, weights, nb_filters, nb_classes, nb_hidden, loss, optimizer, nb_epoch,
@@ -42,10 +41,6 @@ class cnn_parameters(object):
         self.nb_epoch = nb_epoch
         self.batch_size = batch_size
         self.class_fact = class_fact
-
-
-
-
 
 class cnn_model(object):
     @staticmethod
@@ -73,34 +68,7 @@ class cnn_model(object):
 
             # return the constructed network architecture
             return model
-'''
-def train_model_2():
-    # Compile the model
-    model= cnn_model.build()
-    model.compile(loss=loss, optimizer=optimizer, metrics=["accuracy"])
 
-    model_json = model.to_json()
-    with open(model_name, "w") as json_file:
-        json_file.write(model_json)
-    # serialize weights to HDF5
-    model.save_weights(weights)
-    print("Saved model to disk")
-    checkpointer = ModelCheckpoint(filepath=weights, verbose=1, save_best_only=True, save_weights_only=True)
-    class_weight = {0: 1.,
-                    1: 1}
-    history = model.fit(X_train, Y_train, batch_size=batch_size, class_weight=class_weight,
-                        nb_epoch=nb_epoch,
-                        shuffle=True,
-                        callbacks=[checkpointer],
-                        verbose=2,
-                        validation_data=(X_val, Y_val))
-    print('Fitting finished, Plotting results...')
-    proccess_visuallization (history)
-    # if a weights path is supplied (inicating that the model was
-    # pre-trained), then load the weights
-    if weightsPath is not None:
-        model.load_weights(weightsPath)
-'''
 def proccess_visuallization(history ):
         fig, ax = plt.subplots(2, 1)
         ax[0].plot(history.history['loss'], color='b', label="Training loss")
@@ -167,7 +135,7 @@ def train_model(X_train,
     model.add(Dropout(0.25))
 
     model.add(MaxPooling2D(pool_size=(4, 4), strides=(2, 2),data_format='channels_first'))
-    '''
+
     model.add(Conv2D(filters=nb_filters*2, kernel_size=(3, 3),strides=(2,2), kernel_initializer='orthogonal', padding='valid',
                      kernel_regularizer=l2(0.0001), kernel_constraint=maxnorm(2.),
                      data_format='channels_first'))
@@ -178,7 +146,7 @@ def train_model(X_train,
     model.add(Dropout(0.25))
     # we use standard max pooling (halving the output of the previous layer):
     model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2),data_format='channels_first'))
-    '''
+
     model.add(Flatten())
    # model.add(Dense(nb_hidden))
     model.add(Activation('relu'))
@@ -202,7 +170,7 @@ def train_model(X_train,
     model.save_weights(weights)
     print("Saved model to disk")
     checkpointer = ModelCheckpoint(filepath=weights, verbose=1, save_best_only=True,save_weights_only=True)
-    class_weight = {0: 1.,
+    class_weight = {0: class_fact,
                     1:1}
     history= model.fit(X_train, Y_train, batch_size=batch_size,class_weight=class_weight,
               nb_epoch=nb_epoch,
@@ -223,7 +191,7 @@ def train_model(X_train,
     plt.show()
     prediction = model.predict(X_val)
     #visualization(prediction,Y_val)
-
+    #visualization(1-prediction, 1-Y_val)
     return prediction,Y_val
 
 
