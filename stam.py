@@ -12,14 +12,16 @@ from keras.utils import np_utils
 from keras import initializers
 from keras.regularizers import l2
 from keras import backend as K
+from sklearn.utils import shuffle
 from tensorflow.python import debug as tf_debug
-from model_functions1 import datalist, record
+from model_functions1 import datalist, record, SampEn
 import code
 import csv
 print('{}'.format(time.time()-start_time))
 
+
 db_folder = r'C:\Users\Anna\Desktop\PCG RESEARCH\training\SQI Training'
-folder_name = 'a'
+folder_name = 'e'
 datlist = datalist(db_folder)
 db_folder = r'C:\Users\Anna\Desktop\Anna-VLS4U\Desktop\PCG RESEARCH\training\training-'
 
@@ -27,22 +29,27 @@ label = []
 c_dat = np.empty((0, 4))
 
 for index, row in datlist.iterrows():
-    if index > 100:
+    if index > 1782:
         file_name = row[0]
-        label = np.append(label, [int(row[2])], axis=0)
-        if label == []:
+        lab = row[2]
+        if lab is '':
             print('done')
             break
+
         else:
             crecord = record(file_name, db_folder + folder_name)
+            if crecord.sample_entropy is None:
+                continue
             c_dat = np.append(c_dat, [[crecord.sample_entropy, crecord.normalized_amplitude_envelope_kurtosis, crecord.max_correlation_peak, crecord.spectral_ratio]], axis = 0)
-            print(index)
+            label = np.append(label, [int(row[2])], axis=0)
+            print("{} {} index is {}".format(folder_name, file_name, index))
 
     else:
         pass
 
-c_dat = np.hstack((c_dat, np.reshape(label, [308, 1])))
 
+c_dat = np.hstack((c_dat, np.reshape(label, [325, 1])))
+#
 os.chdir(r'C:\Users\Anna\Desktop\PCG RESEARCH\training\SQI Training')
 
 with open('SQI.csv', 'a', newline='') as csvFile:
@@ -54,8 +61,7 @@ with open('SQI.csv', 'a', newline='') as csvFile:
         writer.writerow(c_dat[i])
     csvFile.close()
 
-
-# cdat = np.loadtxt('SQI.csv')
+cdat = np.loadtxt('SQI1.csv')
 # np.savetxt("SQI.csv", c_dat, fmt='%f', delimiter=' ')
 # Z = np.loadtxt('SQI.csv')
 
@@ -65,15 +71,16 @@ with open('SQI.csv', 'a', newline='') as csvFile:
 # Y_train = cdat[:, 4]
 # Y_train = np_utils.to_categorical(Y_train, 4)
 # Y_train = Y_train[:, 1:]
-
+seed = 2
 samp_size = round(0.8*(np.shape(cdat)[0]))
 X = copy.copy(cdat[:, :4])
+Y = cdat[:, 4]
 X[:, 3] = np.log(X[:, 3])
 X = (X - np.mean(X, axis=0))/np.std(X, axis=0)
+X,Y = shuffle(X, Y, random_state = seed)
 X_train = X[:samp_size, :]
 X_Val = X[samp_size:, :]
 
-Y = c_dat[:, 4]
 m = np.bincount((Y.astype(int)))[1:]
 penal_class = {index: np.max(m)/numb for index, numb in enumerate(m)}
 
@@ -108,6 +115,13 @@ class get_grad(keras.callbacks.Callback):
 #         return
 
 
+a = 1
+
+for i in range(10):
+    if a+i < 3:
+        print('yey')
+    else:
+        break
 
 
 
